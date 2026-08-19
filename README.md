@@ -4,8 +4,8 @@ An HR-facing employee directory built for the Frontend Engineer technical assess
 search, filter, sort, paginate, view, add, edit, deactivate and reactivate employees.
 Responsive from phone to desktop, with light and dark themes.
 
-- **Live demo:** _<add your Vercel/Netlify URL here>_
-- **Repository:** _<add your GitHub URL here>_
+- **Live demo:** https://employee-management-by-kashif-shah.vercel.app/
+- **Repository:** https://github.com/kashifshah5898/employee-management
 
 There is no backend. A mock API layer in `src/api/employees.ts` simulates one — with
 latency, server-side pagination, validation and failures — and persists to
@@ -18,7 +18,7 @@ latency, server-side pagination, validation and failures — and persists to
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 24 tests, Vitest + Testing Library
+npm test           # 29 tests, Vitest + Testing Library
 npm run build      # type-check + production build
 npm run storybook  # component states in isolation
 ```
@@ -36,7 +36,7 @@ app rather than a code path nobody can reach:
 | **Field-level server error** | Add an employee using an email that already exists. The rejection lands on the email field, not in a generic banner. |
 | **Empty state** | Search for a name that does not exist. Offers **Clear filters**. |
 | **Loading states** | Skeleton rows on first load; the table dims during refetches; the submit button shows _Saving…_ and disables. |
-| **Reactivating someone** | Set **Status → Inactive**. Every inactive row carries a labelled **Reactivate** button, and the same action sits in that employee's details dialog. |
+| **Reactivating someone** | Set **Status → Inactive**. Inactive rows swap the deactivate action for a green **Reactivate** icon (tooltip on hover or keyboard focus), and the same action sits in that employee's details dialog. |
 | **Light / dark theme** | The control top right: light, dark, or follow the OS. The choice persists, and an inline script in `index.html` applies it before first paint so there is no flash of the wrong palette. |
 | **Shareable views** | Sort a column or change a filter and check the address bar — `?department=Sales&sort=joiningDate&dir=desc` reloads into the same view. |
 
@@ -92,7 +92,7 @@ src/
 │  ├─ FailureToggle.tsx        failure injection control
 │  ├─ ui.tsx                   Button, IconButton + tooltip, Field, ErrorBanner, icons
 │  └─ *.stories.tsx            Storybook stories, colocated with their components
-└─ test/                       setup, fixtures, 6 specs
+└─ test/                       setup, fixtures, 7 specs
 ```
 
 Only the mock API and the `FailureToggle` demo control know the data is fake. Every
@@ -128,7 +128,7 @@ that no longer exists.
 |---|---|
 | **< 640px** | Single-column filters, stacked employee cards, stacked pagination, dialogs at `100vw - 2rem` with a scrolling body. |
 | **640–1023px** | Filters in two columns; still cards rather than a table, since seven columns cannot fit honestly. |
-| **≥ 1024px** | The real `<table>`, in its own `overflow-x-auto` container with a `min-width`, so columns scroll rather than crush. Sorting moves from the mobile "Sort by" select to the column headers. |
+| **≥ 1024px** | The real `<table>`, sized to its own `overflow-x-auto` container so a wide column set scrolls instead of spilling out of the page. Sorting moves from the mobile "Sort by" select to the column headers. |
 
 ## Accessibility
 
@@ -169,7 +169,7 @@ than implementation details:
 - `seed` — the dataset is deterministic and has no duplicate emails or IDs
 - `theme` — defaults to the system preference, switches and persists, and falls back
   when the stored value is junk
-- `regressions` — one test per defect found during review: `?fail=1` can be switched
+- `regressions` — one test per edge case that is easy to get wrong: `?fail=1` can be switched
   back off, an out-of-range page is clamped instead of rendering an empty table, a newly
   created employee is on screen when the form closes, reactivation restores an employee,
   sorting reorders and reports `aria-sort`, and URL filters round-trip while rejecting
@@ -246,8 +246,8 @@ Query already cancels superseded requests by key.
 is wasted bandwidth when six fields are shown. Details load on demand when a row is
 opened.
 
-**Client rendering.** With 25–50 rows per page the DOM stays small, so virtualisation is
-unnecessary. It only becomes necessary if the UX moves to infinite scroll, and then
+**Client rendering.** With a modest page size — 10 here — the DOM stays small, so
+virtualisation is unnecessary. It only becomes necessary if the UX moves to infinite scroll, and then
 `@tanstack/react-virtual` plus `useInfiniteQuery` is the pairing — but I'd push back on
 infinite scroll for an HR tool where people need stable, referenceable positions.
 

@@ -98,6 +98,44 @@ unique names, with a test asserting the dataset has no duplicate emails or IDs.
 > Then run through the requirements checklist from the document and confirm each item is
 > met, or flag anything intentionally left out and why.
 
+## 7. Audit the result against the brief
+
+> Recheck the README, the implementation and the task document. Note down everything
+> that is still pending.
+
+Deliberately adversarial, and it paid for itself. It found three defects I would
+otherwise have shipped:
+
+1. **`?fail=1` was a one-way trap.** The URL parameter overrode the failure toggle
+   permanently, so a reviewer arriving through that link could never switch failures
+   back off — on the one feature built for reviewers to try.
+2. **A page could be left out of range.** Deactivating the last row on the last page
+   shrank the result set without moving the pager, rendering an empty table under
+   "Showing 211–210 of 210".
+3. **A newly created employee was often invisible.** Sorted by name, a new record could
+   land 20 pages away, so the success message appeared with nothing on screen.
+
+It also caught four stale claims in the README, including a wrong Storybook version.
+
+## 8. Close the gaps
+
+> Fix those. Then add reactivation, sortable columns, and filters in the URL — and make
+> the row actions icon buttons with tooltips.
+
+Each fix landed with a regression test that fails against the old behaviour, rather
+than a fix asserted to work.
+
+## 9. Interaction and theming polish
+
+> Reactivate should look like the other row actions. The cursor should be a pointer on
+> hover, and the tooltip should be built from Tailwind utilities. Make the whole app
+> responsive, and add light and dark themes.
+
+The pointer turned out to be a real bug rather than an oversight: Tailwind v4's preflight
+sets `cursor: default` on buttons, so it has to be opted into. Dark mode went in as
+semantic CSS variables behind `[data-theme]` rather than a `dark:` class on every
+element, so each component is still written once.
+
 ---
 
 ## How I worked with the AI
@@ -105,7 +143,12 @@ unique names, with a test asserting the dataset has no duplicate emails or IDs.
 I used it as a fast pair, not as an oracle. The parts I drove myself were the ones that
 determine whether the submission is any good: deciding that Employment Status and
 Deactivate are separate concepts, choosing server-side pagination in the mock so the
-100k-employee answer is architectural rather than hypothetical, and insisting the
-failure states be reachable by a reviewer instead of existing only in code. I reviewed
-every file, and everything here builds, passes its tests, and was checked in a real
-browser.
+100k-employee answer is architectural rather than hypothetical, insisting the failure
+states be reachable by a reviewer instead of existing only in code, and calling for the
+audit in step 7 rather than treating "the tests pass" as done.
+
+Everything here builds and passes its 29 tests. The dialogs, validation, keyboard paths,
+failure injection and the mobile layout were checked by driving the real page in a
+browser — that is how the modal-centring bug surfaced, since no test would have caught
+it. The theming and the final responsive pass were verified against the test suite and
+the compiled CSS rather than by eye.
