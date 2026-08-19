@@ -49,6 +49,16 @@ const meta = {
   title: 'Employee list',
   component: EmployeeTable,
   parameters: { layout: 'fullscreen' },
+  args: {
+    employees: EMPLOYEES,
+    sortBy: 'name',
+    sortDir: 'asc',
+    onSort: noop,
+    onView: noop,
+    onEdit: noop,
+    onDeactivate: noop,
+    onReactivate: noop,
+  },
   decorators: [
     (Story) => (
       <div className="bg-slate-50 p-6">
@@ -63,39 +73,42 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Populated: Story = {
-  args: { employees: EMPLOYEES, onView: noop, onEdit: noop, onDeactivate: noop },
-};
+export const Populated: Story = {};
 
 /** Resize the preview below 1024px to see the table become stacked cards. */
-export const SingleRow: Story = {
-  args: { employees: [EMPLOYEES[0]], onView: noop, onEdit: noop, onDeactivate: noop },
+export const SingleRow: Story = { args: { employees: [EMPLOYEES[0]] } };
+
+/** An inactive employee offers Reactivate in place of Deactivate. */
+export const InactiveEmployee: Story = { args: { employees: [EMPLOYEES[2]] } };
+
+export const SortedByJoiningDate: Story = {
+  args: { sortBy: 'joiningDate', sortDir: 'desc' },
 };
 
 export const Loading: Story = {
-  args: { employees: [], onView: noop, onEdit: noop, onDeactivate: noop },
+  args: { employees: [] },
   render: () => <ListLoading />,
 };
 
 export const Empty: Story = {
-  args: { employees: [], onView: noop, onEdit: noop, onDeactivate: noop },
+  args: { employees: [] },
   render: () => <ListEmpty isFiltered={false} onClear={noop} onAdd={noop} />,
 };
 
 export const EmptyAfterFiltering: Story = {
-  args: { employees: [], onView: noop, onEdit: noop, onDeactivate: noop },
+  args: { employees: [] },
   render: () => <ListEmpty isFiltered onClear={noop} onAdd={noop} />,
 };
 
 export const Error: Story = {
-  args: { employees: [], onView: noop, onEdit: noop, onDeactivate: noop },
+  args: { employees: [] },
   render: () => (
     <ListError message="The employee service is unavailable (503)." onRetry={noop} isRetrying={false} />
   ),
 };
 
 export const Retrying: Story = {
-  args: { employees: [], onView: noop, onEdit: noop, onDeactivate: noop },
+  args: { employees: [] },
   render: () => (
     <ListError message="The employee service is unavailable (503)." onRetry={noop} isRetrying />
   ),

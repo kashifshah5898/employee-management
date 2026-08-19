@@ -8,6 +8,7 @@ import {
   createEmployee,
   deactivateEmployee,
   listEmployees,
+  reactivateEmployee,
   updateEmployee,
 } from '../api/employees';
 import type { EmployeeInput, EmployeeQuery } from '../types';
@@ -54,6 +55,14 @@ export function useDeactivateEmployee() {
   const invalidate = useInvalidateEmployees();
   return useMutation({
     mutationFn: (id: string) => deactivateEmployee(id),
+    onSuccess: invalidate,
+  });
+}
+
+export function useReactivateEmployee() {
+  const invalidate = useInvalidateEmployees();
+  return useMutation({
+    mutationFn: (id: string) => reactivateEmployee(id),
     onSuccess: invalidate,
   });
 }

@@ -21,6 +21,9 @@ configure({ asyncUtilTimeout: 5000 });
 beforeEach(() => {
   window.localStorage.clear();
   resetEmployees();
+  // Filters live in the URL, so a test that filters would otherwise leak its
+  // query string into the next one.
+  window.history.replaceState(null, '', '/');
 });
 
 afterEach(cleanup);

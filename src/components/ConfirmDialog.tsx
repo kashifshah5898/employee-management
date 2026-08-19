@@ -9,11 +9,13 @@ interface ConfirmDialogProps {
   pendingLabel: string;
   isPending: boolean;
   error?: string;
+  /** Reactivating is not destructive, so it does not get the red button. */
+  variant?: 'danger' | 'primary';
   onConfirm: () => void;
   onClose: () => void;
 }
 
-/** Destructive actions never fire straight from the row (requirement 4). */
+/** Deactivation never fires straight from the row (requirement 4). */
 export function ConfirmDialog({
   open,
   title,
@@ -22,6 +24,7 @@ export function ConfirmDialog({
   pendingLabel,
   isPending,
   error,
+  variant = 'danger',
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -34,7 +37,7 @@ export function ConfirmDialog({
           <Button onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={onConfirm} disabled={isPending}>
+          <Button variant={variant} onClick={onConfirm} disabled={isPending}>
             {isPending ? pendingLabel : confirmLabel}
           </Button>
         </div>

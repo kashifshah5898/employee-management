@@ -1,7 +1,7 @@
 # Employee Management Page
 
 An HR-facing employee directory built for the Frontend Engineer technical assessment:
-search, filter, paginate, view, add, edit and deactivate employees.
+search, filter, sort, paginate, view, add, edit, deactivate and reactivate employees.
 
 - **Live demo:** _<add your Vercel/Netlify URL here>_
 - **Repository:** _<add your GitHub URL here>_
@@ -17,7 +17,7 @@ latency, server-side pagination, validation and failures — and persists to
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 14 tests, Vitest + Testing Library
+npm test           # 24 tests, Vitest + Testing Library
 npm run build      # type-check + production build
 npm run storybook  # component states in isolation
 ```
@@ -30,11 +30,12 @@ app rather than a code path nobody can reach:
 
 | To see | Do this |
 |---|---|
-| **Fetch error + recovery** | Tick **Simulate API failure** (top right), or load the page with `?fail=1`. The list shows an error with a **Retry** button. Untick it and retry to recover. |
+| **Fetch error + recovery** | Tick **Simulate API failure** (top right), or load the page with `?fail=1`. The list shows an error with a **Retry** button. Untick it and retry to recover — the parameter only seeds the initial value, so the toggle always wins. |
 | **Mutation error** | Tick the toggle, then add or edit an employee. The dialog stays open, keeps everything you typed, and offers **Try again**. |
 | **Field-level server error** | Add an employee using an email that already exists. The rejection lands on the email field, not in a generic banner. |
 | **Empty state** | Search for a name that does not exist. Offers **Clear filters**. |
 | **Loading states** | Skeleton rows on first load; the table dims during refetches; the submit button shows _Saving…_ and disables. |
+| **Shareable views** | Sort a column or change a filter and check the address bar — `?department=Sales&sort=joiningDate&dir=desc` reloads into the same view. |
 
 Data resets to the seeded 247 employees if you clear `localStorage`.
 
@@ -50,7 +51,7 @@ Data resets to the seeded 247 employees if you clear `localStorage`.
 | **Tailwind CSS v4** | "Design is not a focus" — utility classes keep styling co-located with markup and responsive breakpoints inline, with no design system to invent. |
 | **Native `<dialog>`** | Focus trap, `Esc` to close, backdrop and background inerting come from the platform. A modal library would reimplement all four, worse. |
 | **Vitest + Testing Library** | Shares Vite's transform pipeline; tests exercise the page the way a user drives it. |
-| **Storybook 9** | Optional in the brief; used to show the table's loading / empty / error / populated states side by side. |
+| **Storybook 10** | Optional in the brief; used to show the table's loading / empty / error / populated states side by side. |
 
 **No Redux, no Context, no router — deliberately.** Server state lives in TanStack Query,
 which is global by construction, so no employee data is ever threaded through props.
@@ -71,27 +72,29 @@ src/
 │  └─ employees.ts             mock backend: latency, pagination, filtering,
 │                              validation, failure injection, localStorage
 ├─ hooks/
-│  ├─ useEmployees.ts          list query + create/update/deactivate mutations
-│  └─ useEmployeeFilters.ts    debounced search, filters, page state
+│  ├─ useEmployees.ts          list query + create/update/(de)activate mutations
+│  └─ useEmployeeFilters.ts    debounced search, filters, sort, page — synced to the URL
 ├─ components/
 │  ├─ EmployeeListPage.tsx     composition + which dialog is open
-│  ├─ EmployeeToolbar.tsx      search, department filter, status filter, add
-│  ├─ EmployeeTable.tsx        table on desktop, stacked cards on mobile
+│  ├─ EmployeeToolbar.tsx      search, department + status filters, mobile sort, add
+│  ├─ EmployeeTable.tsx        sortable table on desktop, stacked cards on mobile
 │  ├─ EmployeeFormDialog.tsx   ONE form, create and edit
 │  ├─ EmployeeDetailsDialog.tsx
-│  ├─ ConfirmDialog.tsx        gates the deactivate action
+│  ├─ ConfirmDialog.tsx        gates deactivate, reused for reactivate
 │  ├─ Pagination.tsx
 │  ├─ Modal.tsx                thin wrapper over native <dialog>
 │  ├─ StatusBadge.tsx
 │  ├─ states.tsx               loading / empty / error views
 │  ├─ FailureToggle.tsx        failure injection control
-│  └─ ui.tsx                   Button, Field (label + error + a11y wiring), ErrorBanner
-└─ test/                       setup, fixtures, 5 specs
+│  ├─ ui.tsx                   Button, IconButton + tooltip, Field, ErrorBanner, icons
+│  └─ *.stories.tsx            Storybook stories, colocated with their components
+└─ test/                       setup, fixtures, 6 specs
 ```
 
-The mock API is the only module that knows data is fake. Every component and hook talks
-to it through the same async, paginated contract a real endpoint would expose — so
-swapping in `fetch` touches one file.
+Only the mock API and the `FailureToggle` demo control know the data is fake. Every
+other component and hook talks to it through the same async, paginated contract a real
+endpoint would expose — so pointing this at a real service means rewriting the bodies in
+`src/api/employees.ts` and deleting the toggle.
 
 ## Data model
 
@@ -106,12 +109,14 @@ interface Employee {
   department: Department;      // 8-value enum
   employmentStatus: EmploymentStatus;  // Full-time | Part-time | Contract | Intern
   joiningDate: string;         // 'YYYY-MM-DD'
-  isActive: boolean;           // lifecycle flag, flipped by Deactivate
+  isActive: boolean;           // lifecycle flag, flipped by Deactivate / Reactivate
 }
 ```
 
-The list endpoint takes `{ search, department, status, page, pageSize }` and returns
-`{ data, total, page, pageSize }`.
+The list endpoint takes `{ search, department, status, sortBy, sortDir, page, pageSize }`
+and returns `{ data, total, page, pageSize }`. It clamps the requested page to the
+result set, so deactivating the last row on the last page can't strand the UI on a page
+that no longer exists.
 
 ## Accessibility
 
@@ -120,14 +125,20 @@ The list endpoint takes `{ search, department, status, page, pageSize }` and ret
 - Validation errors use `role="alert"`, are linked with `aria-describedby`, mark the
   control `aria-invalid`, and focus moves to the first invalid field on submit.
 - Modals are native `<dialog>` elements: focus is trapped, `Esc` closes, the rest of the
-  page is inert. Every flow — filter, page, add, edit, deactivate — is keyboard-only
-  operable.
+  page is inert. Every flow — filter, sort, page, add, edit, deactivate, reactivate — is
+  keyboard-only operable.
+- Row actions are icon buttons whose tooltips appear on hover **and** on keyboard focus,
+  so they are not mouse-only. The tooltip is `aria-hidden`; the real name comes from
+  `aria-label` and includes the employee, and the short visible label is contained in it
+  (WCAG 2.5.3, Label in Name).
+- Sortable column headers carry `aria-sort`, so the current order is announced rather
+  than conveyed by an arrow glyph alone.
 - Result counts and success messages are announced through `aria-live` regions.
 - Visible focus rings are kept on all interactive elements.
 
 ## Testing
 
-`npm test` — 14 tests across 5 files, covering the behaviour the brief calls out rather
+`npm test` — 24 tests across 6 files, covering the behaviour the brief calls out rather
 than implementation details:
 
 - `employee-list` — loading → populated, search, department filter, status filter,
@@ -140,6 +151,11 @@ than implementation details:
 - `error-retry` — a failed fetch renders the error, Retry re-attempts, recovery restores
   the table
 - `seed` — the dataset is deterministic and has no duplicate emails or IDs
+- `regressions` — one test per defect found during review: `?fail=1` can be switched
+  back off, an out-of-range page is clamped instead of rendering an empty table, a newly
+  created employee is on screen when the form closes, reactivation restores an employee,
+  sorting reorders and reports `aria-sort`, and URL filters round-trip while rejecting
+  junk parameters
 
 ---
 
@@ -223,9 +239,11 @@ Filter option lists come from a small cached lookup endpoint, never derived from
 employee data.
 
 **Shareable state.** At this scale a filtered view is a work artefact — "the 40 contract
-staff in Ops joining this quarter". Filters belong in the URL so the view can be
-bookmarked, shared and restored, and so browser back works. I skipped that here because
-this build has no router (see trade-offs).
+staff in Ops joining this quarter". Filters, sort and page live in the URL here
+(`?department=Operations&status=Contract&sort=joiningDate&dir=desc`) via the History API,
+so a view can be bookmarked and shared without pulling in a router. `replaceState`
+rather than `pushState`: refining a filter is not a new place, and one history entry per
+keystroke-settled search would bury the back button.
 
 **Bulk work moves to the server.** Exports and bulk deactivations become async jobs with
 a download link or a progress indicator, never a client-side loop over 100k records.
@@ -249,8 +267,9 @@ most information and noted it here rather than silently picking one.
 2. **`employeeId` is system-generated** (`EMP-0001`, sequential). It's a list column but
    not one of the form's fields, so it cannot be user-entered.
 3. **Dialogs, not routes.** View, edit and confirm are modals, so the app needs no
-   router. The cost is no deep-link to a single employee and no filter state in the URL
-   — the first thing I would add for a real deployment, as noted above.
+   router. Filters, sort and page still round-trip through the URL via the History API,
+   so views stay shareable; what's missing is a deep link to one employee's dialog,
+   which would be the reason to add a router.
 4. **Writes persist to `localStorage`** so the deployed demo survives a reload. Clearing
    site data restores the seeded 247 employees.
 5. **Search matches full name only**, case-insensitive and partial, exactly as worded.
@@ -269,10 +288,7 @@ most information and noted it here rather than silently picking one.
 
 Ordered by what would matter most on a real product, not by effort:
 
-- Filters and pagination in the URL (shareable, restorable views)
-- Reactivating a deactivated employee — currently one-way, which the brief didn't ask
-  about but a real HR tool needs
-- Sortable columns, and column-level filters for department/status
+- Column-level filters, and multi-select on department/status
 - Optimistic updates on deactivate, with rollback on failure
 - Persisted query cache, so a reload during an outage still shows the last-known list
 - E2E coverage (Playwright) for the create → edit → deactivate path against a real browser

@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react';
+import { pageOfEmployee } from '../api/employees';
 import { PAGE_SIZE, useEmployeeFilters } from '../hooks/useEmployeeFilters';
-import { useDeactivateEmployee, useEmployeeList } from '../hooks/useEmployees';
+import {
+  useDeactivateEmployee,
+  useEmployeeList,
+  useReactivateEmployee,
+} from '../hooks/useEmployees';
 import { fullName, type Employee } from '../types';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmployeeDetailsDialog } from './EmployeeDetailsDialog';
-import { EmployeeFormDialog } from './EmployeeFormDialog';
+import { EmployeeFormDialog, type SaveResult } from './EmployeeFormDialog';
 import { EmployeeTable } from './EmployeeTable';
 import { EmployeeToolbar } from './EmployeeToolbar';
 import { FailureToggle } from './FailureToggle';
 import { Pagination } from './Pagination';
 import { ListEmpty, ListError, ListLoading } from './states';
 
-/** Only one dialog is ever open, so the open state is one value, not four booleans. */
+/** Only one dialog is ever open, so the open state is one value, not five booleans. */
 type Dialog =
   | { type: 'create' }
   | { type: 'edit'; employee: Employee }
   | { type: 'view'; employee: Employee }
   | { type: 'deactivate'; employee: Employee }
+  | { type: 'reactivate'; employee: Employee }
   | null;
 
 export function EmployeeListPage() {
   const filters = useEmployeeFilters();
   const list = useEmployeeList(filters.query);
   const deactivate = useDeactivateEmployee();
+  const reactivate = useReactivateEmployee();
 
   const [dialog, setDialog] = useState<Dialog>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -37,18 +44,48 @@ export function EmployeeListPage() {
   const closeDialog = () => {
     setDialog(null);
     deactivate.reset();
+    reactivate.reset();
   };
 
-  const confirmDeactivate = (employee: Employee) => {
-    deactivate.mutate(employee.id, {
+  // Deactivate and reactivate are the same flow with the sign flipped, so they
+  // share one confirmation dialog rather than two near-identical ones.
+  const activation =
+    dialog?.type === 'deactivate' || dialog?.type === 'reactivate' ? dialog : null;
+  const isDeactivating = activation?.type === 'deactivate';
+  const activationMutation = isDeactivating ? deactivate : reactivate;
+
+  const confirmActivation = () => {
+    if (!activation) return;
+    const { employee } = activation;
+    activationMutation.mutate(employee.id, {
       onSuccess: () => {
-        setConfirmation(`${fullName(employee)} has been deactivated.`);
+        setConfirmation(
+          `${fullName(employee)} has been ${isDeactivating ? 'deactivated' : 'reactivated'}.`,
+        );
         closeDialog();
       },
     });
   };
 
+  const handleSaved = ({ message, employee, created }: SaveResult) => {
+    setConfirmation(message);
+    if (!created) return;
+    // A new record sorts into the middle of the list, so without this the
+    // confirmation would appear while the employee sits 20 pages away.
+    filters.clear();
+    filters.setPage(
+      pageOfEmployee(employee.id, {
+        sortBy: filters.sortBy,
+        sortDir: filters.sortDir,
+        pageSize: PAGE_SIZE,
+      }),
+    );
+  };
+
   const total = list.data?.total ?? 0;
+  // The server clamps the page when the result set shrinks underneath us, so
+  // its answer — not local state — is what the pager reflects.
+  const page = list.data?.page ?? filters.page;
 
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900">
@@ -66,7 +103,11 @@ export function EmployeeListPage() {
         <div
           role="status"
           aria-live="polite"
-          className={confirmation ? 'rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800' : 'sr-only'}
+          className={
+            confirmation
+              ? 'rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800'
+              : 'sr-only'
+          }
         >
           {confirmation}
         </div>
@@ -79,6 +120,9 @@ export function EmployeeListPage() {
             onDepartmentChange={filters.setDepartment}
             status={filters.status}
             onStatusChange={filters.setStatus}
+            sortBy={filters.sortBy}
+            sortDir={filters.sortDir}
+            onSortChange={filters.setSort}
             onAdd={() => setDialog({ type: 'create' })}
           />
 
@@ -103,13 +147,17 @@ export function EmployeeListPage() {
               <div className={list.isFetching ? 'opacity-60 transition-opacity' : undefined}>
                 <EmployeeTable
                   employees={list.data.data}
+                  sortBy={filters.sortBy}
+                  sortDir={filters.sortDir}
+                  onSort={filters.toggleSort}
                   onView={(employee) => setDialog({ type: 'view', employee })}
                   onEdit={(employee) => setDialog({ type: 'edit', employee })}
                   onDeactivate={(employee) => setDialog({ type: 'deactivate', employee })}
+                  onReactivate={(employee) => setDialog({ type: 'reactivate', employee })}
                 />
               </div>
               <Pagination
-                page={filters.page}
+                page={page}
                 pageSize={PAGE_SIZE}
                 total={total}
                 onPageChange={filters.setPage}
@@ -123,7 +171,7 @@ export function EmployeeListPage() {
         open={dialog?.type === 'create' || dialog?.type === 'edit'}
         employee={dialog?.type === 'edit' ? dialog.employee : null}
         onClose={closeDialog}
-        onSaved={setConfirmation}
+        onSaved={handleSaved}
       />
 
       <EmployeeDetailsDialog
@@ -133,18 +181,25 @@ export function EmployeeListPage() {
       />
 
       <ConfirmDialog
-        open={dialog?.type === 'deactivate'}
-        title="Deactivate employee"
+        open={activation !== null}
+        title={isDeactivating ? 'Deactivate employee' : 'Reactivate employee'}
         description={
-          dialog?.type === 'deactivate'
-            ? `${fullName(dialog.employee)} will be marked as inactive and will no longer appear under active employees. Their record stays in the system and their details remain viewable.`
+          activation
+            ? isDeactivating
+              ? `${fullName(activation.employee)} will be marked as inactive and will no longer appear under active employees. Their record stays in the system and their details remain viewable.`
+              : `${fullName(activation.employee)} will be marked as active again and will appear under active employees.`
             : ''
         }
-        confirmLabel="Deactivate"
-        pendingLabel="Deactivating…"
-        isPending={deactivate.isPending}
-        error={deactivate.error ? `Could not deactivate. ${deactivate.error.message}` : undefined}
-        onConfirm={() => dialog?.type === 'deactivate' && confirmDeactivate(dialog.employee)}
+        confirmLabel={isDeactivating ? 'Deactivate' : 'Reactivate'}
+        pendingLabel={isDeactivating ? 'Deactivating…' : 'Reactivating…'}
+        variant={isDeactivating ? 'danger' : 'primary'}
+        isPending={activationMutation.isPending}
+        error={
+          activationMutation.error
+            ? `Could not ${isDeactivating ? 'deactivate' : 'reactivate'}. ${activationMutation.error.message}`
+            : undefined
+        }
+        onConfirm={confirmActivation}
         onClose={closeDialog}
       />
     </div>

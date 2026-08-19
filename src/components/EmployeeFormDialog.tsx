@@ -49,12 +49,19 @@ const EMPTY_FORM: EmployeeFormValues = {
   joiningDate: '',
 };
 
+export interface SaveResult {
+  message: string;
+  employee: Employee;
+  /** False for an edit — the list only needs to relocate after a create. */
+  created: boolean;
+}
+
 interface EmployeeFormDialogProps {
   open: boolean;
   /** Present in edit mode, null when creating. */
   employee: Employee | null;
   onClose: () => void;
-  onSaved: (message: string) => void;
+  onSaved: (result: SaveResult) => void;
 }
 
 /**
@@ -113,8 +120,12 @@ function EmployeeForm({ employee, onClose, onSaved }: Omit<EmployeeFormDialogPro
         );
       }
     };
-    const onSuccess = () => {
-      onSaved(employee ? 'Employee updated.' : 'Employee added.');
+    const onSuccess = (saved: Employee) => {
+      onSaved({
+        message: employee ? 'Employee updated.' : 'Employee added.',
+        employee: saved,
+        created: employee === null,
+      });
       onClose();
     };
 

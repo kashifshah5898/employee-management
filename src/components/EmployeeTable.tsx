@@ -1,62 +1,126 @@
-import { formatDate, fullName, type Employee } from '../types';
+import {
+  SORT_FIELDS,
+  SORT_LABELS,
+  formatDate,
+  fullName,
+  type Employee,
+  type SortDirection,
+  type SortField,
+} from '../types';
 import { StatusBadge } from './StatusBadge';
-import { Button } from './ui';
+import { DeactivateIcon, EditIcon, IconButton, ReactivateIcon, ViewIcon } from './ui';
 
 interface EmployeeTableProps {
   employees: Employee[];
+  sortBy: SortField;
+  sortDir: SortDirection;
+  onSort: (field: SortField) => void;
   onView: (employee: Employee) => void;
   onEdit: (employee: Employee) => void;
   onDeactivate: (employee: Employee) => void;
+  onReactivate: (employee: Employee) => void;
 }
+
+type RowActionProps = Pick<
+  EmployeeTableProps,
+  'onView' | 'onEdit' | 'onDeactivate' | 'onReactivate'
+>;
 
 /**
  * Action buttons are shared by the desktop table and the mobile cards. Each
  * one names the employee it acts on, so "Edit" is never ambiguous out of
- * context for a screen reader.
+ * context for a screen reader, while the tooltip stays short.
  */
 function RowActions({
   employee,
   onView,
   onEdit,
   onDeactivate,
-}: { employee: Employee } & Omit<EmployeeTableProps, 'employees'>) {
+  onReactivate,
+}: { employee: Employee } & RowActionProps) {
   const name = fullName(employee);
   return (
-    <div className="flex flex-wrap items-center gap-1">
-      <Button variant="ghost" onClick={() => onView(employee)} aria-label={`View details for ${name}`}>
-        View
-      </Button>
-      <Button variant="ghost" onClick={() => onEdit(employee)} aria-label={`Edit ${name}`}>
-        Edit
-      </Button>
-      {employee.isActive && (
-        <Button
-          variant="ghost"
+    <div className="flex items-center gap-0.5">
+      <IconButton label={`View details for ${name}`} tooltip="View" onClick={() => onView(employee)}>
+        <ViewIcon />
+      </IconButton>
+      <IconButton label={`Edit ${name}`} tooltip="Edit" onClick={() => onEdit(employee)}>
+        <EditIcon />
+      </IconButton>
+      {employee.isActive ? (
+        <IconButton
+          label={`Deactivate ${name}`}
+          tooltip="Deactivate"
+          tone="danger"
           onClick={() => onDeactivate(employee)}
-          aria-label={`Deactivate ${name}`}
-          className="text-red-600 hover:bg-red-50 hover:text-red-700"
         >
-          Deactivate
-        </Button>
+          <DeactivateIcon />
+        </IconButton>
+      ) : (
+        <IconButton
+          label={`Reactivate ${name}`}
+          tooltip="Reactivate"
+          onClick={() => onReactivate(employee)}
+        >
+          <ReactivateIcon />
+        </IconButton>
       )}
     </div>
   );
 }
 
-const HEADERS = ['Name', 'Employee ID', 'Job Title', 'Department', 'Status', 'Joining Date'];
+function SortableHeader({
+  field,
+  sortBy,
+  sortDir,
+  onSort,
+}: { field: SortField } & Pick<EmployeeTableProps, 'sortBy' | 'sortDir' | 'onSort'>) {
+  const active = sortBy === field;
+  return (
+    <th
+      scope="col"
+      aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className="px-4 py-3 font-medium text-slate-600"
+    >
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className="inline-flex items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:text-slate-900"
+      >
+        {SORT_LABELS[field]}
+        <span aria-hidden="true" className={active ? 'text-slate-900' : 'text-slate-300'}>
+          {active && sortDir === 'desc' ? '↓' : '↑'}
+        </span>
+      </button>
+    </th>
+  );
+}
 
-export function EmployeeTable({ employees, ...actions }: EmployeeTableProps) {
+export function EmployeeTable({
+  employees,
+  sortBy,
+  sortDir,
+  onSort,
+  ...actions
+}: EmployeeTableProps) {
   return (
     <>
       {/* Desktop: a real table, so the column semantics survive. */}
       <table className="hidden w-full border-collapse text-left text-sm lg:table">
-        <caption className="sr-only">Employees</caption>
+        <caption className="sr-only">
+          Employees, sorted by {SORT_LABELS[sortBy].toLowerCase()},{' '}
+          {sortDir === 'asc' ? 'ascending' : 'descending'}
+        </caption>
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50">
-            {HEADERS.map((header) => (
-              <th key={header} scope="col" className="px-4 py-3 font-medium text-slate-600">
-                {header}
-              </th>
+            {SORT_FIELDS.map((field) => (
+              <SortableHeader
+                key={field}
+                field={field}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                onSort={onSort}
+              />
             ))}
             <th scope="col" className="px-4 py-3 text-right font-medium text-slate-600">
               Actions
@@ -73,7 +137,10 @@ export function EmployeeTable({ employees, ...actions }: EmployeeTableProps) {
               <td className="px-4 py-3 text-slate-700">{employee.jobTitle}</td>
               <td className="px-4 py-3 text-slate-700">{employee.department}</td>
               <td className="px-4 py-3">
-                <StatusBadge isActive={employee.isActive} employmentStatus={employee.employmentStatus} />
+                <StatusBadge
+                  isActive={employee.isActive}
+                  employmentStatus={employee.employmentStatus}
+                />
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-slate-700">
                 {formatDate(employee.joiningDate)}
@@ -100,12 +167,15 @@ export function EmployeeTable({ employees, ...actions }: EmployeeTableProps) {
               {employee.jobTitle} · {employee.department}
             </p>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <StatusBadge isActive={employee.isActive} employmentStatus={employee.employmentStatus} />
+              <StatusBadge
+                isActive={employee.isActive}
+                employmentStatus={employee.employmentStatus}
+              />
               <span className="text-xs text-slate-500">
                 Joined {formatDate(employee.joiningDate)}
               </span>
             </div>
-            <div className="-mx-1 mt-1">
+            <div className="-mx-2 flex justify-end">
               <RowActions employee={employee} {...actions} />
             </div>
           </li>

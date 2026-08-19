@@ -1,10 +1,25 @@
 import {
   DEPARTMENTS,
   EMPLOYMENT_STATUSES,
+  SORT_DIRECTIONS,
+  SORT_FIELDS,
+  SORT_LABELS,
   type Department,
+  type SortDirection,
+  type SortField,
   type StatusFilter,
 } from '../types';
 import { Button, inputClass } from './ui';
+
+/** Reads better than "ascending" for most of these columns. */
+const DIRECTION_LABELS: Record<SortField, [asc: string, desc: string]> = {
+  name: ['A–Z', 'Z–A'],
+  employeeId: ['ascending', 'descending'],
+  jobTitle: ['A–Z', 'Z–A'],
+  department: ['A–Z', 'Z–A'],
+  status: ['active first', 'inactive first'],
+  joiningDate: ['oldest first', 'newest first'],
+};
 
 interface EmployeeToolbarProps {
   search: string;
@@ -13,6 +28,9 @@ interface EmployeeToolbarProps {
   onDepartmentChange: (value: Department | 'all') => void;
   status: StatusFilter;
   onStatusChange: (value: StatusFilter) => void;
+  sortBy: SortField;
+  sortDir: SortDirection;
+  onSortChange: (field: SortField, direction: SortDirection) => void;
   onAdd: () => void;
 }
 
@@ -23,6 +41,9 @@ export function EmployeeToolbar({
   onDepartmentChange,
   status,
   onStatusChange,
+  sortBy,
+  sortDir,
+  onSortChange,
   onAdd,
 }: EmployeeToolbarProps) {
   return (
@@ -84,6 +105,31 @@ export function EmployeeToolbar({
                 </option>
               ))}
             </optgroup>
+          </select>
+        </div>
+
+        {/* Below lg the table headings are gone, so sorting needs its own
+            control. Above lg the column headers do this job. */}
+        <div className="flex flex-col gap-1.5 lg:hidden">
+          <label htmlFor="employee-sort" className="text-sm font-medium text-slate-700">
+            Sort by
+          </label>
+          <select
+            id="employee-sort"
+            value={`${sortBy}:${sortDir}`}
+            onChange={(event) => {
+              const [field, direction] = event.target.value.split(':');
+              onSortChange(field as SortField, direction as SortDirection);
+            }}
+            className={inputClass}
+          >
+            {SORT_FIELDS.flatMap((field) =>
+              SORT_DIRECTIONS.map((direction) => (
+                <option key={`${field}:${direction}`} value={`${field}:${direction}`}>
+                  {SORT_LABELS[field]} ({DIRECTION_LABELS[field][direction === 'asc' ? 0 : 1]})
+                </option>
+              )),
+            )}
           </select>
         </div>
       </div>

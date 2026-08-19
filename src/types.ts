@@ -45,10 +45,36 @@ export type EmployeeInput = Omit<Employee, 'id' | 'employeeId' | 'isActive'>;
  */
 export type StatusFilter = 'all' | 'active' | 'inactive' | EmploymentStatus;
 
+export const SORT_FIELDS = [
+  'name',
+  'employeeId',
+  'jobTitle',
+  'department',
+  'status',
+  'joiningDate',
+] as const;
+
+export const SORT_DIRECTIONS = ['asc', 'desc'] as const;
+
+export type SortField = (typeof SORT_FIELDS)[number];
+export type SortDirection = (typeof SORT_DIRECTIONS)[number];
+
+/** Column headings, reused by the table and the mobile sort control. */
+export const SORT_LABELS: Record<SortField, string> = {
+  name: 'Name',
+  employeeId: 'Employee ID',
+  jobTitle: 'Job Title',
+  department: 'Department',
+  status: 'Status',
+  joiningDate: 'Joining Date',
+};
+
 export interface EmployeeQuery {
   search: string;
   department: Department | 'all';
   status: StatusFilter;
+  sortBy: SortField;
+  sortDir: SortDirection;
   page: number;
   pageSize: number;
 }
