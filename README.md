@@ -35,6 +35,7 @@ app rather than a code path nobody can reach:
 | **Field-level server error** | Add an employee using an email that already exists. The rejection lands on the email field, not in a generic banner. |
 | **Empty state** | Search for a name that does not exist. Offers **Clear filters**. |
 | **Loading states** | Skeleton rows on first load; the table dims during refetches; the submit button shows _Saving…_ and disables. |
+| **Reactivating someone** | Set **Status → Inactive**. Every inactive row carries a labelled **Reactivate** button, and the same action sits in that employee's details dialog. |
 | **Shareable views** | Sort a column or change a filter and check the address bar — `?department=Sales&sort=joiningDate&dir=desc` reloads into the same view. |
 
 Data resets to the seeded 247 employees if you clear `localStorage`.

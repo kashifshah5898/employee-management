@@ -8,7 +8,7 @@ import {
   type SortField,
 } from '../types';
 import { StatusBadge } from './StatusBadge';
-import { DeactivateIcon, EditIcon, IconButton, ReactivateIcon, ViewIcon } from './ui';
+import { Button, DeactivateIcon, EditIcon, IconButton, ReactivateIcon, ViewIcon } from './ui';
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -57,13 +57,19 @@ function RowActions({
           <DeactivateIcon />
         </IconButton>
       ) : (
-        <IconButton
-          label={`Reactivate ${name}`}
-          tooltip="Reactivate"
+        // Reactivation is the exception, and an icon that differs from
+        // "deactivate" by one stroke is not a discoverable way to offer it.
+        // The labelled button is the point: an inactive row should say what
+        // can be done about it.
+        <Button
+          variant="success"
+          aria-label={`Reactivate ${name}`}
           onClick={() => onReactivate(employee)}
+          className="ml-1 gap-1.5 py-1.5"
         >
           <ReactivateIcon />
-        </IconButton>
+          Reactivate
+        </Button>
       )}
     </div>
   );

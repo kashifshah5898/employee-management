@@ -178,6 +178,7 @@ export function EmployeeListPage() {
         employee={dialog?.type === 'view' ? dialog.employee : null}
         onClose={closeDialog}
         onEdit={(employee) => setDialog({ type: 'edit', employee })}
+        onReactivate={(employee) => setDialog({ type: 'reactivate', employee })}
       />
 
       <ConfirmDialog

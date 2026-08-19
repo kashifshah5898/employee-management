@@ -1,12 +1,13 @@
 import { formatDate, fullName, type Employee } from '../types';
 import { Modal } from './Modal';
 import { StatusBadge } from './StatusBadge';
-import { Button } from './ui';
+import { Button, ReactivateIcon } from './ui';
 
 interface EmployeeDetailsDialogProps {
   employee: Employee | null;
   onClose: () => void;
   onEdit: (employee: Employee) => void;
+  onReactivate: (employee: Employee) => void;
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -18,7 +19,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-export function EmployeeDetailsDialog({ employee, onClose, onEdit }: EmployeeDetailsDialogProps) {
+export function EmployeeDetailsDialog({
+  employee,
+  onClose,
+  onEdit,
+  onReactivate,
+}: EmployeeDetailsDialogProps) {
   return (
     <Modal open={employee !== null} onClose={onClose} title="Employee details">
       {employee && (
@@ -42,6 +48,14 @@ export function EmployeeDetailsDialog({ employee, onClose, onEdit }: EmployeeDet
           </dl>
           <div className="flex flex-col-reverse gap-2 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
             <Button onClick={onClose}>Close</Button>
+            {/* Someone who opened an inactive record is the person most likely
+                to want them back, so the action lives here too. */}
+            {!employee.isActive && (
+              <Button variant="success" onClick={() => onReactivate(employee)} className="gap-1.5">
+                <ReactivateIcon />
+                Reactivate employee
+              </Button>
+            )}
             <Button variant="primary" onClick={() => onEdit(employee)}>
               Edit employee
             </Button>

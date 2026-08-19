@@ -128,6 +128,29 @@ describe('a newly created employee', () => {
 });
 
 describe('reactivating an employee', () => {
+  it('is a labelled button, not an icon that differs from Deactivate by one stroke', async () => {
+    givenEmployees([makeEmployee({ isActive: false })]);
+    renderPage();
+    await screen.findByRole('table');
+
+    expect(rowAction('Reactivate Sarah Chen')).toHaveTextContent('Reactivate');
+  });
+
+  it('can also be reached from the details dialog', async () => {
+    givenEmployees([makeEmployee({ isActive: false })]);
+    const { user } = renderPage();
+    await screen.findByRole('table');
+
+    await user.click(rowAction('View details for Sarah Chen'));
+    const details = within(await screen.findByRole('dialog'));
+    await user.click(details.getByRole('button', { name: 'Reactivate employee' }));
+
+    await user.click(await screen.findByRole('button', { name: 'Reactivate' }));
+
+    await waitFor(() => expect(inTable().getByText('Active')).toBeInTheDocument());
+    expect(screen.getByRole('status')).toHaveTextContent('Sarah Chen has been reactivated.');
+  });
+
   it('offers Reactivate instead of Deactivate, and restores them', async () => {
     givenEmployees([makeEmployee({ isActive: false })]);
     const { user } = renderPage();
