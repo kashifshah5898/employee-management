@@ -89,8 +89,8 @@ export function EmployeeListPage() {
   const page = list.data?.page ?? filters.page;
 
   return (
-    <div className="min-h-dvh bg-canvas text-content">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-dvh overflow-x-hidden bg-canvas text-content">
+      <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Employees</h1>
@@ -116,7 +116,7 @@ export function EmployeeListPage() {
           {confirmation}
         </div>
 
-        <main className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
+        <main className="min-w-0 overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
           <EmployeeToolbar
             search={filters.search}
             onSearchChange={filters.setSearch}

@@ -110,8 +110,8 @@ export function EmployeeTable({
     <>
       {/* Desktop: a real table, so the column semantics survive. It scrolls
           horizontally rather than crushing seven columns into a narrow laptop. */}
-      <div className="hidden overflow-x-auto lg:block">
-      <table className="w-full min-w-4xl border-collapse text-left text-sm">
+      <div className="hidden w-full min-w-0 overflow-x-auto lg:block">
+      <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">
           Employees, sorted by {SORT_LABELS[sortBy].toLowerCase()},{' '}
           {sortDir === 'asc' ? 'ascending' : 'descending'}
