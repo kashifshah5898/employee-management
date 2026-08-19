@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Native <dialog> handles focus trapping, Esc-to-close and inerting the page.
+   It only needs to be told how to look. */
+dialog {
+  /* Tailwind's preflight zeroes the margin the UA relies on to centre a modal. */
+  margin: auto;
+  max-width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 4rem);
+}
+dialog::backdrop {
+  background: rgb(15 23 42 / 0.55);
+}
