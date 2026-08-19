@@ -14,6 +14,7 @@ import { EmployeeTable } from './EmployeeTable';
 import { EmployeeToolbar } from './EmployeeToolbar';
 import { FailureToggle } from './FailureToggle';
 import { Pagination } from './Pagination';
+import { ThemeToggle } from './ThemeToggle';
 import { ListEmpty, ListError, ListLoading } from './states';
 
 /** Only one dialog is ever open, so the open state is one value, not five booleans. */
@@ -88,16 +89,19 @@ export function EmployeeListPage() {
   const page = list.data?.page ?? filters.page;
 
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-900">
+    <div className="min-h-dvh bg-canvas text-content">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Employees</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Employees</h1>
+            <p className="mt-1 text-sm text-content-muted">
               Search, filter and manage everyone on the team.
             </p>
           </div>
-          <FailureToggle />
+          <div className="flex flex-wrap items-center gap-2">
+            <FailureToggle />
+            <ThemeToggle />
+          </div>
         </header>
 
         <div
@@ -105,14 +109,14 @@ export function EmployeeListPage() {
           aria-live="polite"
           className={
             confirmation
-              ? 'rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800'
+              ? 'rounded-md border border-success-line bg-success-surface px-3 py-2 text-sm text-success-content'
               : 'sr-only'
           }
         >
           {confirmation}
         </div>
 
-        <main className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <main className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
           <EmployeeToolbar
             search={filters.search}
             onSearchChange={filters.setSearch}

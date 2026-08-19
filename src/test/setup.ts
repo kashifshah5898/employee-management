@@ -15,6 +15,26 @@ if (!HTMLDialogElement.prototype.showModal) {
   };
 }
 
+// jsdom implements no matchMedia, which the theme hook consults for the
+// system preference.
+if (!window.matchMedia) {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia;
+}
+
+// The theme lands on <html>; reset it so themes do not leak between tests.
+beforeEach(() => {
+  delete document.documentElement.dataset.theme;
+});
+
 // The mock API adds realistic latency, so the default 1s wait is too tight.
 configure({ asyncUtilTimeout: 5000 });
 

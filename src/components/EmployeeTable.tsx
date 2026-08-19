@@ -8,7 +8,7 @@ import {
   type SortField,
 } from '../types';
 import { StatusBadge } from './StatusBadge';
-import { Button, DeactivateIcon, EditIcon, IconButton, ReactivateIcon, ViewIcon } from './ui';
+import { DeactivateIcon, EditIcon, IconButton, ReactivateIcon, ViewIcon } from './ui';
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -57,19 +57,16 @@ function RowActions({
           <DeactivateIcon />
         </IconButton>
       ) : (
-        // Reactivation is the exception, and an icon that differs from
-        // "deactivate" by one stroke is not a discoverable way to offer it.
-        // The labelled button is the point: an inactive row should say what
-        // can be done about it.
-        <Button
-          variant="success"
-          aria-label={`Reactivate ${name}`}
+        // Tinted green rather than neutral, so an inactive row reads as
+        // offering a different action than the rows around it.
+        <IconButton
+          label={`Reactivate ${name}`}
+          tooltip="Reactivate"
+          tone="success"
           onClick={() => onReactivate(employee)}
-          className="ml-1 gap-1.5 py-1.5"
         >
           <ReactivateIcon />
-          Reactivate
-        </Button>
+        </IconButton>
       )}
     </div>
   );
@@ -86,15 +83,15 @@ function SortableHeader({
     <th
       scope="col"
       aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className="px-4 py-3 font-medium text-slate-600"
+      className="px-4 py-3 font-medium text-content-muted"
     >
       <button
         type="button"
         onClick={() => onSort(field)}
-        className="inline-flex items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:text-slate-900"
+        className="inline-flex cursor-pointer items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent hover:text-content"
       >
         {SORT_LABELS[field]}
-        <span aria-hidden="true" className={active ? 'text-slate-900' : 'text-slate-300'}>
+        <span aria-hidden="true" className={active ? 'text-content' : 'text-content-subtle/40'}>
           {active && sortDir === 'desc' ? '↓' : '↑'}
         </span>
       </button>
@@ -111,14 +108,16 @@ export function EmployeeTable({
 }: EmployeeTableProps) {
   return (
     <>
-      {/* Desktop: a real table, so the column semantics survive. */}
-      <table className="hidden w-full border-collapse text-left text-sm lg:table">
+      {/* Desktop: a real table, so the column semantics survive. It scrolls
+          horizontally rather than crushing seven columns into a narrow laptop. */}
+      <div className="hidden overflow-x-auto lg:block">
+      <table className="w-full min-w-4xl border-collapse text-left text-sm">
         <caption className="sr-only">
           Employees, sorted by {SORT_LABELS[sortBy].toLowerCase()},{' '}
           {sortDir === 'asc' ? 'ascending' : 'descending'}
         </caption>
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50">
+          <tr className="border-b border-line bg-surface-muted">
             {SORT_FIELDS.map((field) => (
               <SortableHeader
                 key={field}
@@ -128,27 +127,27 @@ export function EmployeeTable({
                 onSort={onSort}
               />
             ))}
-            <th scope="col" className="px-4 py-3 text-right font-medium text-slate-600">
+            <th scope="col" className="px-4 py-3 text-right font-medium text-content-muted">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-line">
           {employees.map((employee) => (
-            <tr key={employee.id} className="hover:bg-slate-50">
-              <th scope="row" className="px-4 py-3 font-medium text-slate-900">
+            <tr key={employee.id} className="hover:bg-surface-muted">
+              <th scope="row" className="px-4 py-3 font-medium text-content">
                 {fullName(employee)}
               </th>
-              <td className="px-4 py-3 font-mono text-xs text-slate-500">{employee.employeeId}</td>
-              <td className="px-4 py-3 text-slate-700">{employee.jobTitle}</td>
-              <td className="px-4 py-3 text-slate-700">{employee.department}</td>
+              <td className="px-4 py-3 font-mono text-xs text-content-subtle">{employee.employeeId}</td>
+              <td className="px-4 py-3 text-content">{employee.jobTitle}</td>
+              <td className="px-4 py-3 text-content">{employee.department}</td>
               <td className="px-4 py-3">
                 <StatusBadge
                   isActive={employee.isActive}
                   employmentStatus={employee.employmentStatus}
                 />
               </td>
-              <td className="px-4 py-3 whitespace-nowrap text-slate-700">
+              <td className="px-4 py-3 whitespace-nowrap text-content">
                 {formatDate(employee.joiningDate)}
               </td>
               <td className="px-4 py-2">
@@ -160,16 +159,17 @@ export function EmployeeTable({
           ))}
         </tbody>
       </table>
+      </div>
 
       {/* Mobile: a table cannot fit, so the same data becomes stacked cards. */}
-      <ul className="divide-y divide-slate-100 lg:hidden">
+      <ul className="divide-y divide-line lg:hidden">
         {employees.map((employee) => (
           <li key={employee.id} className="flex flex-col gap-2 p-4">
             <div className="flex items-baseline justify-between gap-3">
-              <h3 className="font-medium text-slate-900">{fullName(employee)}</h3>
-              <span className="font-mono text-xs text-slate-500">{employee.employeeId}</span>
+              <h3 className="font-medium text-content">{fullName(employee)}</h3>
+              <span className="font-mono text-xs text-content-subtle">{employee.employeeId}</span>
             </div>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-content">
               {employee.jobTitle} · {employee.department}
             </p>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -177,7 +177,7 @@ export function EmployeeTable({
                 isActive={employee.isActive}
                 employmentStatus={employee.employmentStatus}
               />
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-content-subtle">
                 Joined {formatDate(employee.joiningDate)}
               </span>
             </div>

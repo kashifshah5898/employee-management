@@ -12,7 +12,7 @@ import {
   type EmploymentStatus,
 } from '../types';
 import { Modal } from './Modal';
-import { Button, ErrorBanner, Field, inputClass } from './ui';
+import { Button, ErrorBanner, Field, inputClass, selectClass } from './ui';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -175,7 +175,7 @@ function EmployeeForm({ employee, onClose, onSaved }: Omit<EmployeeFormDialogPro
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="department" label="Department" required error={errors.department?.message}>
             {(props) => (
-              <select {...props} {...register('department')} className={inputClass}>
+              <select {...props} {...register('department')} className={selectClass}>
                 <option value="">Select a department</option>
                 {DEPARTMENTS.map((name) => (
                   <option key={name} value={name}>
@@ -193,7 +193,7 @@ function EmployeeForm({ employee, onClose, onSaved }: Omit<EmployeeFormDialogPro
             error={errors.employmentStatus?.message}
           >
             {(props) => (
-              <select {...props} {...register('employmentStatus')} className={inputClass}>
+              <select {...props} {...register('employmentStatus')} className={selectClass}>
                 <option value="">Select a status</option>
                 {EMPLOYMENT_STATUSES.map((name) => (
                   <option key={name} value={name}>
@@ -219,7 +219,7 @@ function EmployeeForm({ employee, onClose, onSaved }: Omit<EmployeeFormDialogPro
         </Field>
       </div>
 
-      <div className="flex flex-col-reverse gap-2 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-2 border-t border-line p-5 sm:flex-row sm:justify-end">
         <Button type="button" onClick={onClose} disabled={mutation.isPending}>
           Cancel
         </Button>

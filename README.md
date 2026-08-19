@@ -2,6 +2,7 @@
 
 An HR-facing employee directory built for the Frontend Engineer technical assessment:
 search, filter, sort, paginate, view, add, edit, deactivate and reactivate employees.
+Responsive from phone to desktop, with light and dark themes.
 
 - **Live demo:** _<add your Vercel/Netlify URL here>_
 - **Repository:** _<add your GitHub URL here>_
@@ -36,6 +37,7 @@ app rather than a code path nobody can reach:
 | **Empty state** | Search for a name that does not exist. Offers **Clear filters**. |
 | **Loading states** | Skeleton rows on first load; the table dims during refetches; the submit button shows _Saving…_ and disables. |
 | **Reactivating someone** | Set **Status → Inactive**. Every inactive row carries a labelled **Reactivate** button, and the same action sits in that employee's details dialog. |
+| **Light / dark theme** | The control top right: light, dark, or follow the OS. The choice persists, and an inline script in `index.html` applies it before first paint so there is no flash of the wrong palette. |
 | **Shareable views** | Sort a column or change a filter and check the address bar — `?department=Sales&sort=joiningDate&dir=desc` reloads into the same view. |
 
 Data resets to the seeded 247 employees if you clear `localStorage`.
@@ -50,6 +52,7 @@ Data resets to the seeded 247 employees if you clear `localStorage`.
 | **TanStack Query v5** | The task's state requirements *are* query states: loading, error, retry, pending mutations, cache invalidation. Query provides them directly, and its pagination/caching model is what a 100k-row directory would need anyway. |
 | **react-hook-form + zod** | One schema drives both create and edit. RHF wires `aria-invalid`/`aria-describedby` per field and focuses the first invalid input on submit. |
 | **Tailwind CSS v4** | "Design is not a focus" — utility classes keep styling co-located with markup and responsive breakpoints inline, with no design system to invent. |
+| **Semantic colour tokens** | Components use `bg-surface` / `text-content` / `border-line`, mapped through `@theme inline` to CSS variables that `[data-theme]` swaps. Dark mode is therefore one block of variables rather than a `dark:` class on every element. |
 | **Native `<dialog>`** | Focus trap, `Esc` to close, backdrop and background inerting come from the platform. A modal library would reimplement all four, worse. |
 | **Vitest + Testing Library** | Shares Vite's transform pipeline; tests exercise the page the way a user drives it. |
 | **Storybook 10** | Optional in the brief; used to show the table's loading / empty / error / populated states side by side. |
@@ -119,6 +122,14 @@ and returns `{ data, total, page, pageSize }`. It clamps the requested page to t
 result set, so deactivating the last row on the last page can't strand the UI on a page
 that no longer exists.
 
+## Responsive behaviour
+
+| Width | Layout |
+|---|---|
+| **< 640px** | Single-column filters, stacked employee cards, stacked pagination, dialogs at `100vw - 2rem` with a scrolling body. |
+| **640–1023px** | Filters in two columns; still cards rather than a table, since seven columns cannot fit honestly. |
+| **≥ 1024px** | The real `<table>`, in its own `overflow-x-auto` container with a `min-width`, so columns scroll rather than crush. Sorting moves from the mobile "Sort by" select to the column headers. |
+
 ## Accessibility
 
 - Every form control has a `<label for>`; every icon-only or repeated button has a
@@ -135,11 +146,15 @@ that no longer exists.
 - Sortable column headers carry `aria-sort`, so the current order is announced rather
   than conveyed by an arrow glyph alone.
 - Result counts and success messages are announced through `aria-live` regions.
-- Visible focus rings are kept on all interactive elements.
+- Visible focus rings are kept on all interactive elements, and every control carries
+  `cursor-pointer` — Tailwind v4's preflight sets buttons to `cursor: default`, so the
+  pointer has to be opted into rather than inherited.
+- The theme control is a labelled group of toggle buttons with `aria-pressed`, so the
+  active choice is exposed rather than implied by colour.
 
 ## Testing
 
-`npm test` — 24 tests across 6 files, covering the behaviour the brief calls out rather
+`npm test` — 29 tests across 7 files, covering the behaviour the brief calls out rather
 than implementation details:
 
 - `employee-list` — loading → populated, search, department filter, status filter,
@@ -152,6 +167,8 @@ than implementation details:
 - `error-retry` — a failed fetch renders the error, Retry re-attempts, recovery restores
   the table
 - `seed` — the dataset is deterministic and has no duplicate emails or IDs
+- `theme` — defaults to the system preference, switches and persists, and falls back
+  when the stored value is junk
 - `regressions` — one test per defect found during review: `?fail=1` can be switched
   back off, an out-of-range page is clamped instead of rendering an empty table, a newly
   created employee is on screen when the form closes, reactivation restores an employee,

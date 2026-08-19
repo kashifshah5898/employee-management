@@ -13,8 +13,8 @@ interface EmployeeDetailsDialogProps {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[9rem_1fr] gap-2 py-2 max-sm:grid-cols-1 max-sm:gap-0.5">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-sm text-slate-900">{children}</dd>
+      <dt className="text-sm text-content-subtle">{label}</dt>
+      <dd className="text-sm text-content">{children}</dd>
     </div>
   );
 }
@@ -29,13 +29,16 @@ export function EmployeeDetailsDialog({
     <Modal open={employee !== null} onClose={onClose} title="Employee details">
       {employee && (
         <div className="flex flex-col overflow-y-auto">
-          <dl className="divide-y divide-slate-100 px-5 py-2">
+          <dl className="divide-y divide-line px-5 py-2">
             <Row label="Name">{fullName(employee)}</Row>
             <Row label="Employee ID">
               <span className="font-mono text-xs">{employee.employeeId}</span>
             </Row>
             <Row label="Email">
-              <a className="text-slate-900 underline underline-offset-2" href={`mailto:${employee.email}`}>
+              <a
+                className="break-all text-content underline underline-offset-2"
+                href={`mailto:${employee.email}`}
+              >
                 {employee.email}
               </a>
             </Row>
@@ -46,7 +49,7 @@ export function EmployeeDetailsDialog({
             </Row>
             <Row label="Joining date">{formatDate(employee.joiningDate)}</Row>
           </dl>
-          <div className="flex flex-col-reverse gap-2 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-line p-5 sm:flex-row sm:justify-end">
             <Button onClick={onClose}>Close</Button>
             {/* Someone who opened an inactive record is the person most likely
                 to want them back, so the action lives here too. */}

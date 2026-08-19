@@ -61,8 +61,8 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="bg-slate-50 p-6">
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="bg-surface-muted p-6">
+        <div className="overflow-hidden rounded-xl border border-line bg-surface">
           <Story />
         </div>
       </div>

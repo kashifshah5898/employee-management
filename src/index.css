@@ -1,5 +1,90 @@
 @import "tailwindcss";
 
+/* Theme is driven by data-theme on <html>, set before paint by the inline
+   script in index.html so there is no flash of the wrong palette. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Colours are semantic tokens rather than raw palette values, so a component
+   is written once and both themes follow from the variables below. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-content: var(--content);
+  --color-content-muted: var(--content-muted);
+  --color-content-subtle: var(--content-subtle);
+  --color-accent: var(--accent);
+  --color-accent-content: var(--accent-content);
+
+  --color-success-surface: var(--success-surface);
+  --color-success-line: var(--success-line);
+  --color-success-content: var(--success-content);
+  --color-success-dot: var(--success-dot);
+
+  --color-danger-surface: var(--danger-surface);
+  --color-danger-line: var(--danger-line);
+  --color-danger-content: var(--danger-content);
+
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-line: var(--warning-line);
+  --color-warning-content: var(--warning-content);
+}
+
+:root {
+  color-scheme: light;
+
+  --canvas: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --line: #e2e8f0;
+  --content: #0f172a;
+  --content-muted: #475569;
+  --content-subtle: #64748b;
+  --accent: #0f172a;
+  --accent-content: #ffffff;
+
+  --success-surface: #ecfdf5;
+  --success-line: #a7f3d0;
+  --success-content: #047857;
+  --success-dot: #10b981;
+
+  --danger-surface: #fef2f2;
+  --danger-line: #fecaca;
+  --danger-content: #b91c1c;
+
+  --warning-surface: #fffbeb;
+  --warning-line: #fcd34d;
+  --warning-content: #92400e;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #020617;
+  --surface: #0f172a;
+  --surface-muted: #1e293b;
+  --line: #29374d;
+  --content: #e2e8f0;
+  --content-muted: #94a3b8;
+  --content-subtle: #7c8aa0;
+  --accent: #e2e8f0;
+  --accent-content: #0f172a;
+
+  --success-surface: #052e24;
+  --success-line: #115e4a;
+  --success-content: #6ee7b7;
+  --success-dot: #34d399;
+
+  --danger-surface: #2c1113;
+  --danger-line: #7f1d1d;
+  --danger-content: #fca5a5;
+
+  --warning-surface: #2a1f08;
+  --warning-line: #78350f;
+  --warning-content: #fcd34d;
+}
+
 /* Native <dialog> handles focus trapping, Esc-to-close and inerting the page.
    It only needs to be told how to look. */
 dialog {
@@ -9,5 +94,5 @@ dialog {
   max-height: calc(100dvh - 4rem);
 }
 dialog::backdrop {
-  background: rgb(15 23 42 / 0.55);
+  background: rgb(2 6 23 / 0.6);
 }

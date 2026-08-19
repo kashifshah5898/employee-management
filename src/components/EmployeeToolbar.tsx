@@ -9,7 +9,7 @@ import {
   type SortField,
   type StatusFilter,
 } from '../types';
-import { Button, inputClass } from './ui';
+import { Button, inputClass, selectClass } from './ui';
 
 /** Reads better than "ascending" for most of these columns. */
 const DIRECTION_LABELS: Record<SortField, [asc: string, desc: string]> = {
@@ -47,10 +47,10 @@ export function EmployeeToolbar({
   onAdd,
 }: EmployeeToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex flex-col gap-3 border-b border-line p-4 lg:flex-row lg:items-end lg:justify-between">
       <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:items-end">
         <div className="flex flex-col gap-1.5 lg:w-64">
-          <label htmlFor="employee-search" className="text-sm font-medium text-slate-700">
+          <label htmlFor="employee-search" className="text-sm font-medium text-content">
             Search by name
           </label>
           <input
@@ -64,14 +64,14 @@ export function EmployeeToolbar({
         </div>
 
         <div className="flex flex-col gap-1.5 lg:w-48">
-          <label htmlFor="employee-department" className="text-sm font-medium text-slate-700">
+          <label htmlFor="employee-department" className="text-sm font-medium text-content">
             Department
           </label>
           <select
             id="employee-department"
             value={department}
             onChange={(event) => onDepartmentChange(event.target.value as Department | 'all')}
-            className={inputClass}
+            className={selectClass}
           >
             <option value="all">All departments</option>
             {DEPARTMENTS.map((name) => (
@@ -83,7 +83,7 @@ export function EmployeeToolbar({
         </div>
 
         <div className="flex flex-col gap-1.5 lg:w-48">
-          <label htmlFor="employee-status" className="text-sm font-medium text-slate-700">
+          <label htmlFor="employee-status" className="text-sm font-medium text-content">
             Status
           </label>
           {/* Two facets, one control: optgroup keeps them distinguishable. */}
@@ -91,7 +91,7 @@ export function EmployeeToolbar({
             id="employee-status"
             value={status}
             onChange={(event) => onStatusChange(event.target.value as StatusFilter)}
-            className={inputClass}
+            className={selectClass}
           >
             <option value="all">All statuses</option>
             <optgroup label="Activity">
@@ -111,7 +111,7 @@ export function EmployeeToolbar({
         {/* Below lg the table headings are gone, so sorting needs its own
             control. Above lg the column headers do this job. */}
         <div className="flex flex-col gap-1.5 lg:hidden">
-          <label htmlFor="employee-sort" className="text-sm font-medium text-slate-700">
+          <label htmlFor="employee-sort" className="text-sm font-medium text-content">
             Sort by
           </label>
           <select
@@ -121,7 +121,7 @@ export function EmployeeToolbar({
               const [field, direction] = event.target.value.split(':');
               onSortChange(field as SortField, direction as SortDirection);
             }}
-            className={inputClass}
+            className={selectClass}
           >
             {SORT_FIELDS.flatMap((field) =>
               SORT_DIRECTIONS.map((direction) => (

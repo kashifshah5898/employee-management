@@ -33,7 +33,7 @@ export function Modal({ open, onClose, title, children, size = 'sm' }: ModalProp
     <dialog
       ref={ref}
       aria-labelledby={titleId}
-      className={`w-full rounded-xl bg-white p-0 text-slate-900 shadow-xl ${size === 'md' ? 'sm:max-w-2xl' : ''}`}
+      className={`w-full rounded-xl bg-surface p-0 text-content shadow-xl ${size === 'md' ? 'sm:max-w-2xl' : ''}`}
       style={size === 'md' ? { maxWidth: 'min(42rem, calc(100vw - 2rem))' } : undefined}
       // Esc fires `cancel`; let React own the open state rather than the DOM.
       onCancel={(event) => {
@@ -46,7 +46,7 @@ export function Modal({ open, onClose, title, children, size = 'sm' }: ModalProp
     >
       {open && (
         <div className="flex max-h-[inherit] flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+          <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
             <h2 id={titleId} className="text-lg font-semibold">
               {title}
             </h2>

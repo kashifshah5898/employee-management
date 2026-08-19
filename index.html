@@ -8,6 +8,19 @@
     <title>Employee Management</title>
   </head>
   <body>
+    <script>
+      // Applies the saved theme before first paint, so the page never flashes
+      // the wrong palette on load.
+      try {
+        var pref = localStorage.getItem('ems.theme') || 'system';
+        var dark =
+          pref === 'dark' ||
+          (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (error) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

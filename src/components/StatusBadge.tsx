@@ -12,16 +12,16 @@ export function StatusBadge({
     <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
       <span
         className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-          isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+          isActive ? 'bg-success-surface text-success-content' : 'bg-surface-muted text-content-muted'
         }`}
       >
         <span
           aria-hidden="true"
-          className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}
+          className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-success-dot' : 'bg-content-subtle'}`}
         />
         {isActive ? 'Active' : 'Inactive'}
       </span>
-      <span className="text-xs text-slate-500">{employmentStatus}</span>
+      <span className="text-xs text-content-subtle">{employmentStatus}</span>
     </span>
   );
 }

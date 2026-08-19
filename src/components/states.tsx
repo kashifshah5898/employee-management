@@ -8,10 +8,10 @@ export function ListLoading({ rows = 5 }: { rows?: number }) {
       <div className="animate-pulse space-y-3">
         {Array.from({ length: rows }, (_, index) => (
           <div key={index} className="flex items-center gap-4">
-            <div className="h-4 w-1/4 rounded bg-slate-200" />
-            <div className="h-4 w-1/6 rounded bg-slate-200" />
-            <div className="hidden h-4 w-1/5 rounded bg-slate-200 sm:block" />
-            <div className="hidden h-4 w-1/6 rounded bg-slate-200 md:block" />
+            <div className="h-4 w-1/4 rounded bg-line" />
+            <div className="h-4 w-1/6 rounded bg-line" />
+            <div className="hidden h-4 w-1/5 rounded bg-line sm:block" />
+            <div className="hidden h-4 w-1/6 rounded bg-line md:block" />
           </div>
         ))}
       </div>
@@ -30,10 +30,10 @@ export function ListEmpty({
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <h3 className="text-base font-semibold text-slate-900">
+      <h3 className="text-base font-semibold text-content">
         {isFiltered ? 'No employees match your filters' : 'No employees yet'}
       </h3>
-      <p className="max-w-sm text-sm text-slate-500">
+      <p className="max-w-sm text-sm text-content-subtle">
         {isFiltered
           ? 'Try a different name, department or status — or clear the filters to see everyone.'
           : 'Add your first employee to get started.'}

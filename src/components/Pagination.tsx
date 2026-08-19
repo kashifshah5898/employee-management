@@ -15,18 +15,18 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
   return (
     <nav
       aria-label="Employee list pagination"
-      className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
     >
       {/* Announced on change so keyboard and screen-reader users know they moved. */}
-      <p className="text-sm text-slate-600" aria-live="polite">
-        Showing <strong className="font-medium text-slate-900">{first}–{last}</strong> of{' '}
-        <strong className="font-medium text-slate-900">{total}</strong> employees
+      <p className="text-sm text-content-muted" aria-live="polite">
+        Showing <strong className="font-medium text-content">{first}–{last}</strong> of{' '}
+        <strong className="font-medium text-content">{total}</strong> employees
       </p>
       <div className="flex items-center gap-2">
         <Button onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
           Previous
         </Button>
-        <span className="px-1 text-sm text-slate-600">
+        <span className="px-1 text-sm text-content-muted">
           Page {page} of {pageCount}
         </span>
         <Button onClick={() => onPageChange(page + 1)} disabled={page >= pageCount}>

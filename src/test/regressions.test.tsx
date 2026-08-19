@@ -128,12 +128,16 @@ describe('a newly created employee', () => {
 });
 
 describe('reactivating an employee', () => {
-  it('is a labelled button, not an icon that differs from Deactivate by one stroke', async () => {
+  it('sits with the other row actions and carries a tooltip', async () => {
     givenEmployees([makeEmployee({ isActive: false })]);
     renderPage();
     await screen.findByRole('table');
 
-    expect(rowAction('Reactivate Sarah Chen')).toHaveTextContent('Reactivate');
+    const button = rowAction('Reactivate Sarah Chen');
+    expect(button).toBeInTheDocument();
+    // Icon-only, so the short label lives in the tooltip beside the button
+    // while the accessible name still identifies the employee.
+    expect(button.parentElement).toHaveTextContent('Reactivate');
   });
 
   it('can also be reached from the details dialog', async () => {

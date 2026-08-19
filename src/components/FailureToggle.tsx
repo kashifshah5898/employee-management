@@ -20,12 +20,12 @@ export function FailureToggle() {
   };
 
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+    <label className="flex cursor-pointer items-center gap-2 rounded-md border border-warning-line bg-warning-surface px-3 py-2 text-sm text-warning-content">
       <input
         type="checkbox"
         checked={enabled}
         onChange={(event) => toggle(event.target.checked)}
-        className="h-4 w-4 accent-amber-600"
+        className="h-4 w-4 accent-warning-content"
       />
       Simulate API failure
     </label>
